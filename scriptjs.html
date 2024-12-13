@@ -1,0 +1,89 @@
+const wordList = ["apple", "table", "grape", "chair", "stone"]; // Add more words here
+const maxGuesses = 6;
+let targetWord = '';
+let currentGuess = 0;
+let guesses = [];
+
+// Get DOM elements
+const wordleGrid = document.getElementById('wordle-grid');
+const guessInput = document.getElementById('guess-input');
+const submitButton = document.getElementById('submit-guess');
+const message = document.getElementById('message');
+const resetButton = document.getElementById('reset-game');
+
+// Initialize the game
+function initGame() {
+  targetWord = wordList[Math.floor(Math.random() * wordList.length)];
+  guesses = [];
+  currentGuess = 0;
+  message.textContent = "";
+  guessInput.value = "";
+
+  // Create an empty grid for displaying guesses
+  wordleGrid.innerHTML = "";
+  for (let i = 0; i < maxGuesses; i++) {
+    for (let j = 0; j < 5; j++) {
+      const cell = document.createElement('div');
+      cell.classList.add('grid-cell');
+      wordleGrid.appendChild(cell);
+    }
+  }
+}
+
+// Handle submit guess action
+function submitGuess() {
+  const guess = guessInput.value.toLowerCase().trim();
+
+  if (guess.length !== 5 || !/^[a-z]+$/.test(guess)) {
+    message.textContent = "Please enter a valid 5-letter word.";
+    return;
+  }
+
+  if (guesses.includes(guess)) {
+    message.textContent = "You've already guessed that word!";
+    return;
+  }
+
+  if (currentGuess < maxGuesses) {
+    guesses.push(guess);
+    updateGrid(guess, currentGuess);
+    currentGuess++;
+
+    // Check if the guess is correct
+    if (guess === targetWord) {
+      message.textContent = "Congratulations! You've won!";
+      submitButton.disabled = true;
+    } else if (currentGuess === maxGuesses) {
+      message.textContent = `Game Over! The word was: ${targetWord}`;
+      submitButton.disabled = true;
+    }
+  }
+}
+
+// Update the grid with the guessed word
+function updateGrid(guess, row) {
+  const cells = wordleGrid.children;
+  const guessArray = guess.split('');
+  
+  for (let i = 0; i < 5; i++) {
+    const cell = cells[row * 5 + i];
+    cell.textContent = guessArray[i];
+    if (guessArray[i] === targetWord[i]) {
+      cell.style.backgroundColor = 'green';
+    } else if (targetWord.includes(guessArray[i])) {
+      cell.style.backgroundColor = 'yellow';
+    } else {
+      cell.style.backgroundColor = 'gray';
+    }
+  }
+}
+
+// Reset the game
+function resetGame() {
+  initGame();
+  submitButton.disabled = false;
+  message.textContent = "";
+}
+
+submitButton.addEventListener('click', submitGuess);
+resetButton.addEventListener('click', resetGame);
